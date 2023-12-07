@@ -11,7 +11,7 @@ public static partial class HostConfiguration
     {
         builder
             .AddDevTools()
-            .AddIdentityInfrastructure()
+            .AddInfrastructure()
             .AddCaching()
             .AddPersistence()
             .AddValidators()

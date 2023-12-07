@@ -93,7 +93,7 @@ public class EntityRepositoryBase<TEntity, TContext>(TContext dbContext, ICacheB
     /// </summary>
     protected async ValueTask<TEntity> UpdateAsync(TEntity entity, bool saveChanges = true, CancellationToken cancellationToken = default)
     {
-        DbContext.Set<TEntity>().Update(entity);
+        DbContext.Update(entity);
 
         await cacheBroker.SetAsync(entity.Id.ToString(), entity);
 

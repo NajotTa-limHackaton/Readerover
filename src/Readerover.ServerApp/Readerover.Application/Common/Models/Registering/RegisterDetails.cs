@@ -1,16 +1,16 @@
-﻿namespace Readerover.Api.Common.Dtos;
+﻿using System.Globalization;
 
-public class UserDto
+namespace Readerover.Application.Common.Models.Registering;
+
+public class RegisterDetails
 {
-    public Guid Id {  get; set; }
-
     public string FirstName { get; set; } = default!;
 
     public string LastName { get; set; } = default!;
 
     public string EmailAddress { get; set; } = default!;
 
-    public string Password   { get; set; } = default!;
+    public string Password { get; set; } = default!;
 
     public DateTime BirthDate { get; set; }
 

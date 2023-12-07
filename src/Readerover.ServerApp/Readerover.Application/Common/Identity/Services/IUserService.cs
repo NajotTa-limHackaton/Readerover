@@ -16,4 +16,6 @@ public interface IUserService
     ValueTask<User?> DeleteByIdAsync(Guid userId, bool saveChanges = true, CancellationToken cancellationToken = default);
 
     ValueTask<User?> DeleteAsync(User user, bool saveChanges = true, CancellationToken cancellationToken = default);
+
+    ValueTask<User> UpdateImagePath(Guid userId, string imagePath, CancellationToken cancellationToken = default);
 }

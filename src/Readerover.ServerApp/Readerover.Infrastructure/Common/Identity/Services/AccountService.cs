@@ -1,4 +1,6 @@
-﻿using Readerover.Application.Common.Identity.Services;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Readerover.Application.Common.Identity.Services;
 using Readerover.Application.Common.Models.Querying;
 using Readerover.Domain.Entities;
 using Readerover.Infrastructure.Common.Extensions.Querying;
@@ -6,7 +8,11 @@ using System.Linq.Expressions;
 
 namespace Readerover.Infrastructure.Common.Identity.Services;
 
-public class AccountService(IUserService userService, IPasswordHasherService passwordHasher) : IAccountService
+public class AccountService(
+    IUserService userService,
+    IPasswordHasherService passwordHasher,
+    IWebHostEnvironment environment,
+    IFileValidatorService fileValidatorService) : IAccountService
 {
     public async ValueTask<User> CreateAsync(User user, bool saveChanges = true, CancellationToken cancellationToken = default)
     {
@@ -15,8 +21,6 @@ public class AccountService(IUserService userService, IPasswordHasherService pas
         user.Password = passwordHasher.Hash(user.Password);
 
         await userService.CreateAsync(user, saveChanges, cancellationToken);
-
-        //sending verification token
 
         return user;
     }
@@ -31,7 +35,7 @@ public class AccountService(IUserService userService, IPasswordHasherService pas
         return userService.DeleteByIdAsync(id, saveChanges, cancellationToken);
     }
 
-    public IQueryable<User> Get(FilterPagination filterPagination, bool applyPagination = true, Expression<Func<User, bool>>? predicate = null, bool asNoTracking = false)
+    public IQueryable<User> Get(FilterPagination? filterPagination = default, bool applyPagination = true, Expression<Func<User, bool>>? predicate = null, bool asNoTracking = false)
     {
         var users = userService.Get(predicate, asNoTracking);
 
@@ -50,4 +54,22 @@ public class AccountService(IUserService userService, IPasswordHasherService pas
         return userService.UpdateAsync(user, saveChanges, cancellationToken);
     }
 
+    public async ValueTask<string> UploadImageAsync(IFormFile file, Guid userId, CancellationToken cancellationToken = default)
+    {
+        await fileValidatorService.ValidateProfileImage(file, cancellationToken);
+
+        var fileExtension = file.FileName.Split('.').LastOrDefault() ?? throw new InvalidOperationException("Invalid file extension");
+        var usersPath = Path.Combine(environment.WebRootPath, "users");
+        var imagePath = Path.Combine(usersPath, $"{userId}.{fileExtension}");
+        if (File.Exists(imagePath)) File.Delete(imagePath);
+
+        if (!Directory.Exists(usersPath)) Directory.CreateDirectory(usersPath);
+
+        using (var stream = new FileStream(imagePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream, cancellationToken);
+        }
+
+        return imagePath;
+    }
 }

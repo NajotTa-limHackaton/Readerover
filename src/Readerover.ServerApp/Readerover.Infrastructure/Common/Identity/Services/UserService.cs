@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Readerover.Application.Common.Identity.Services;
 using Readerover.Domain.Entities;
+using Readerover.Domain.Exceptions;
 using Readerover.Persistence.Repositories.Interfaces;
 using System.Linq.Expressions;
 
@@ -47,8 +48,20 @@ public class UserService(IUserRepository userRepository, IValidator<User> valida
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);
 
-        await userRepository.UpdateAsync(user, saveChanges, cancellationToken);
+        var updatedUser = await userRepository.UpdateAsync(user, saveChanges, cancellationToken);
 
-        return user;
+        return updatedUser;
+    }
+
+    public async ValueTask<User> UpdateImagePath(Guid userId, string imagePath, CancellationToken cancellationToken = default)
+    {
+        var foundUser = await GetByIdAsync(userId, cancellationToken: cancellationToken)
+            ?? throw new EntityNotFoundException("User not found with this id!");
+
+        foundUser.ImageUrl = imagePath;
+
+        var updatedUser = await userRepository.UpdateAsync(foundUser, cancellationToken: cancellationToken);
+
+        return updatedUser;
     }
 }

@@ -1,4 +1,5 @@
-﻿using Readerover.Domain.Common.Models;
+﻿using Readerover.Domain.Common.Enums;
+using Readerover.Domain.Common.Models;
 
 namespace Readerover.Domain.Entities;
 
@@ -16,5 +17,9 @@ public class User : AuditableEntity
 
     public string Country { get; set; } = default!;
 
+    public bool Verified { get; set; }
+
     public string? ImageUrl { get; set; }
+
+    public Role Role { get; set; } = Role.User;
 }

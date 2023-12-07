@@ -11,6 +11,8 @@ public class AppDbContext : DbContext
 
     public DbSet<SubCategory> SubCategories => Set<SubCategory>();
 
+    public DbSet<Author> Authors => Set<Author>();
+
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }

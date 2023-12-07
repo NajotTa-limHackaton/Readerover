@@ -6,7 +6,7 @@ public class Category : AuditableEntity
 {
     public string Name { get; set; } = default!;
 
-    public bool IsActive { get; set; }
+    public bool IsActive { get; set; } = true;
 
     public List<SubCategory> SubCategories { get; set; } = new();
 }
