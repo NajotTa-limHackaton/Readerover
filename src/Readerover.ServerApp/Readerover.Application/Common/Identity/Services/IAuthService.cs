@@ -9,3 +9,4 @@ public interface IAuthService
 
     ValueTask<string> SignInAsync(LoginDetails loginDetails, CancellationToken cancellationToken = default);
 }
+    

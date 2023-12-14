@@ -20,4 +20,6 @@ public interface IAccountService
     ValueTask<User?> DeleteByIdAsync(Guid id, bool saveChanges = true, CancellationToken cancellationToken = default);
 
     ValueTask<string> UploadImageAsync(IFormFile file, Guid userId, CancellationToken cancellationToken = default);
+
+    ValueTask<bool> AddBookToSavedAsync(Guid userId, Guid bookId, CancellationToken cancellationToken = default);
 }

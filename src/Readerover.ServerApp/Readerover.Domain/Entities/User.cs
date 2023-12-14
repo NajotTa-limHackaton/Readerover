@@ -1,5 +1,6 @@
 ﻿using Readerover.Domain.Common.Enums;
 using Readerover.Domain.Common.Models;
+using System.Text.Json.Serialization;
 
 namespace Readerover.Domain.Entities;
 
@@ -17,9 +18,10 @@ public class User : AuditableEntity
 
     public string Country { get; set; } = default!;
 
-    public bool Verified { get; set; }
-
     public string? ImageUrl { get; set; }
 
     public Role Role { get; set; } = Role.User;
+
+    [JsonIgnore]
+    public List<Guid> SavedBooks { get; set; } = new();
 }

@@ -1,11 +1,12 @@
-﻿using Readerover.Domain.Entities;
+﻿using Readerover.Application.Common.Models.Querying;
+using Readerover.Domain.Entities;
 using System.Linq.Expressions;
 
 namespace Readerover.Application.Common.Identity.Services;
 
 public interface ISubCategoryService
 {
-    IQueryable<SubCategory> Get(Expression<Func<SubCategory, bool>>? predicate = default, bool asNoTracking = false);
+    IQueryable<SubCategory> Get(FilterPagination? filterPagination = default, Expression<Func<SubCategory, bool>>? predicate = default, bool asNoTracking = false);
 
     ValueTask<SubCategory?> GetByIdAsync(Guid subCategoryId, bool asNoTracking = false, CancellationToken cancellationToken = default);
 

@@ -1,5 +1,7 @@
 ﻿using Readerover.Application.Common.Identity.Services;
+using Readerover.Application.Common.Models.Querying;
 using Readerover.Domain.Entities;
+using Readerover.Infrastructure.Common.Extensions.Querying;
 using Readerover.Persistence.Repositories.Interfaces;
 using System.Linq.Expressions;
 using System.Security.Cryptography.X509Certificates;
@@ -23,9 +25,11 @@ public class SubCategoryService(ISubCategoryRepository subCategoryRepository) : 
         return subCategoryRepository.DeleteByIdAsync(subCategoryId, saveChanges, cancellationToken);
     }
 
-    public IQueryable<SubCategory> Get(Expression<Func<SubCategory, bool>>? predicate = null, bool asNoTracking = false)
+    public IQueryable<SubCategory> Get(FilterPagination? filterPagination = default, Expression<Func<SubCategory, bool>>? predicate = null, bool asNoTracking = false)
     {
-        return subCategoryRepository.Get(predicate, asNoTracking);
+        return filterPagination is not null 
+            ? subCategoryRepository.Get(predicate, asNoTracking).ApplyPagination(filterPagination)
+            : subCategoryRepository.Get(predicate, asNoTracking);
     }
 
     public ValueTask<SubCategory?> GetByIdAsync(Guid subCategoryId, bool asNoTracking = false, CancellationToken cancellationToken = default)

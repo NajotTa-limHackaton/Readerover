@@ -10,12 +10,12 @@ namespace Readerover.Api.Controller;
 
 [ApiController]
 [Route("api/[controller]")]
-public class CategoriesController(ICategoryService categoryService) : ControllerBase
+public class SubCategoriesController(ISubCategoryService subCategoryService) : ControllerBase
 {
     [HttpGet]
     public ValueTask<IActionResult> Get([FromQuery] FilterPagination filterPagination)
     {
-        var result = categoryService.Get(filterPagination);
+        var result = subCategoryService.Get(filterPagination);
 
         return new(result.Any() ? Ok(result) : NoContent());
     }
@@ -23,35 +23,35 @@ public class CategoriesController(ICategoryService categoryService) : Controller
     [HttpGet("{id:guid}")]
     public async ValueTask<IActionResult> GetById([FromRoute] Guid id, CancellationToken cancellationToken)
     {
-        var result = await categoryService.GetByIdAsync(id, cancellationToken: cancellationToken);
+        var result = await subCategoryService.GetByIdAsync(id, cancellationToken: cancellationToken);
+
         return result is not null ? Ok(result) : NotFound();
     }
 
     [HttpPost]
     [Authorize(Roles = "SuperAdmin,Admin")]
-    public async ValueTask<IActionResult> Create([FromBody] CategoryDto categoryDto, CancellationToken cancellationToken)
+    public async ValueTask<IActionResult> Create([FromBody] SubCategoryDto subCategoryDto, CancellationToken cancellationToken)
     {
-        var result = await categoryService.CreateAsync(categoryDto.Adapt<Category>(), cancellationToken: cancellationToken);
-        return CreatedAtAction(
-            nameof(GetById),
-            new { id = result.Id },
-            result);
+        var result = await subCategoryService.CreateAsync(subCategoryDto.Adapt<SubCategory>(), cancellationToken: cancellationToken);
+
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
     [HttpPut]
     [Authorize(Roles = "SuperAdmin,Admin")]
-    public async ValueTask<IActionResult> Update([FromBody] CategoryDto categoryDto, CancellationToken cancellationToken)
+    public async ValueTask<IActionResult> Update([FromBody] SubCategoryDto subCategoryDto, CancellationToken cancellationToken = default)
     {
-        var result = await categoryService.UpdateAsync(categoryDto.Adapt<Category>(), cancellationToken: cancellationToken);
+        var result = await subCategoryService.UpdateAsync(subCategoryDto.Adapt<SubCategory>(), cancellationToken: cancellationToken);
+
         return result is not null ? Ok(result) : BadRequest();
     }
 
-
     [HttpDelete("{id:guid}")]
     [Authorize(Roles = "SuperAdmin,Admin")]
-    public async ValueTask<IActionResult> Delete([FromRoute] Guid id, CancellationToken cancellationToken)
+    public async ValueTask<IActionResult> DeleteById([FromRoute] Guid id, CancellationToken cancellationToken)
     {
-        var result = await categoryService.DeleteByIdAsync(id, cancellationToken: cancellationToken);
+        var result = await subCategoryService.DeleteByIdAsync(id, cancellationToken: cancellationToken);
+
         return result is not null ? Ok(result) : BadRequest();
     }
 }

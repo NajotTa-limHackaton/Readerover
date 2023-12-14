@@ -1,5 +1,8 @@
-﻿using Readerover.Application.Common.Identity.Services;
+﻿using Microsoft.EntityFrameworkCore;
+using Readerover.Application.Common.Identity.Services;
+using Readerover.Application.Common.Models.Querying;
 using Readerover.Domain.Entities;
+using Readerover.Infrastructure.Common.Extensions.Querying;
 using Readerover.Persistence.Repositories.Interfaces;
 using System.Linq.Expressions;
 
@@ -22,9 +25,9 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         return categoryRepository.DeleteByIdAsync(categoryId, saveChanges, cancellationToken);
     }
 
-    public IQueryable<Category> Get(Expression<Func<Category, bool>>? predicate = null, bool asNoTracking = false)
+    public IQueryable<Category> Get(FilterPagination? filterPagination = default, Expression<Func<Category, bool>>? predicate = null, bool asNoTracking = false)
     {
-        return categoryRepository.Get(predicate, asNoTracking);
+        return filterPagination is not null ? categoryRepository.Get(predicate, asNoTracking).ApplyPagination(filterPagination) : categoryRepository.Get(predicate, asNoTracking);
     }
 
     public ValueTask<Category?> GetByIdAsync(Guid categoryId, bool asNoTracking = false, CancellationToken cancellationToken = default)

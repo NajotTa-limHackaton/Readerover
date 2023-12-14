@@ -78,10 +78,12 @@ public static partial class HostConfiguration
 
         builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(nameof(JwtSettings)));
         builder.Services.Configure<FileSettings>(builder.Configuration.GetSection(nameof(FileSettings)));
+        builder.Services.Configure<UrlSettings>(builder.Configuration.GetSection(nameof(UrlSettings)));
 
         builder.Services
             .AddSingleton<IPasswordHasherService, PasswordHasherService>()
-            .AddSingleton<IAccessTokenGeneratorService, AccessTokenGeneratorService>();
+            .AddSingleton<IAccessTokenGeneratorService, AccessTokenGeneratorService>()
+            .AddSingleton<IUrlService, UrlService>();
 
 
         builder.Services
@@ -93,7 +95,12 @@ public static partial class HostConfiguration
             .AddScoped<IAuthService, AuthService>()
             .AddScoped<IFileValidatorService, FileValidatorService>()
             .AddScoped<ICategoryService, CategoryService>()
-            .AddScoped<ISubCategoryService, SubCategoryService>();
+            .AddScoped<ISubCategoryService, SubCategoryService>()
+            .AddScoped<IBookRepository, BookRepository>()
+            .AddScoped<IBookService, BookService>()
+            .AddScoped<IBookOrchestrationService, BookOrchestrationService>()
+            .AddScoped<IAuthorRepository, AuthorRepository>()
+            .AddScoped<IAuthorService, AuthorService>();
 
         var jwtSettings = builder.Configuration.GetSection(nameof(JwtSettings)).Get<JwtSettings>()
             ?? throw new InvalidOperationException("Jwt settings is not configured.");
@@ -154,6 +161,8 @@ public static partial class HostConfiguration
     private static WebApplication UseExposers(this WebApplication app)
     {
         app.MapControllers();
+
+        app.UseStaticFiles();
 
         return app;
     }

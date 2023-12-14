@@ -1,11 +1,12 @@
-﻿using Readerover.Domain.Entities;
+﻿using Readerover.Application.Common.Models.Querying;
+using Readerover.Domain.Entities;
 using System.Linq.Expressions;
 
 namespace Readerover.Application.Common.Identity.Services;
 
 public interface ICategoryService
 {
-    IQueryable<Category> Get(Expression<Func<Category, bool>>? predicate = default, bool asNoTracking = false);
+    IQueryable<Category> Get(FilterPagination? filterPagination = default, Expression<Func<Category, bool>>? predicate = default, bool asNoTracking = false);
 
     ValueTask<Category?> GetByIdAsync(Guid categoryId, bool asNoTracking = false, CancellationToken cancellationToken = default);
 

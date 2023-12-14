@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Http;
 using Readerover.Application.Common.Identity.Services;
 using Readerover.Application.Common.Models.Querying;
 using Readerover.Domain.Entities;
+using Readerover.Domain.Exceptions;
+using Readerover.Infrastructure.Common.Extensions;
 using Readerover.Infrastructure.Common.Extensions.Querying;
 using System.Linq.Expressions;
 
@@ -12,8 +14,20 @@ public class AccountService(
     IUserService userService,
     IPasswordHasherService passwordHasher,
     IWebHostEnvironment environment,
-    IFileValidatorService fileValidatorService) : IAccountService
+    IFileValidatorService fileValidatorService,
+    IUrlService urlService) : IAccountService
 {
+    public async ValueTask<bool> AddBookToSavedAsync(Guid userId, Guid bookId, CancellationToken cancellationToken = default)
+    {
+        var found = await GetByIdAsync(userId, cancellationToken: cancellationToken)
+            ?? throw new InvalidOperationException("User not found wirh this id!");
+
+        found.SavedBooks.Add(bookId);
+        await userService.UpdateAsync(found, cancellationToken: cancellationToken);
+
+        return true;
+    }
+
     public async ValueTask<User> CreateAsync(User user, bool saveChanges = true, CancellationToken cancellationToken = default)
     {
         if (user.Password.Length < 8) throw new ArgumentException("invalid Password");
@@ -56,20 +70,31 @@ public class AccountService(
 
     public async ValueTask<string> UploadImageAsync(IFormFile file, Guid userId, CancellationToken cancellationToken = default)
     {
-        await fileValidatorService.ValidateProfileImage(file, cancellationToken);
+        var user = await GetByIdAsync(userId)
+            ?? throw new EntityNotFoundException("User not found!");
+
+        var validationResult = await fileValidatorService.ValidateImageAsync(file, cancellationToken);
+        if (validationResult) await fileValidatorService.DeleteIfImageExistsAsync(userId, "users", environment.WebRootPath, cancellationToken);
 
         var fileExtension = file.FileName.Split('.').LastOrDefault() ?? throw new InvalidOperationException("Invalid file extension");
-        var usersPath = Path.Combine(environment.WebRootPath, "users");
-        var imagePath = Path.Combine(usersPath, $"{userId}.{fileExtension}");
-        if (File.Exists(imagePath)) File.Delete(imagePath);
 
-        if (!Directory.Exists(usersPath)) Directory.CreateDirectory(usersPath);
+        var usersFolderName = "users";
+        var usersFolderPath = Path.Combine(environment.WebRootPath, usersFolderName);
+        if (!Directory.Exists(usersFolderPath)) Directory.CreateDirectory(usersFolderPath);
+        
+        var relativePath = Path.Combine(usersFolderName, $"{userId}.{fileExtension}");
+        var absolutePath = Path.Combine(environment.WebRootPath, relativePath);
 
-        using (var stream = new FileStream(imagePath, FileMode.Create))
+
+        using (var stream = new FileStream(absolutePath, FileMode.Create))
         {
             await file.CopyToAsync(stream, cancellationToken);
         }
 
-        return imagePath;
+        var absoluteUrl = await urlService.GetAbsoluteUrlFromRelativePath(relativePath);
+        user.ImageUrl = absoluteUrl;
+        await UpdateAsync(user, cancellationToken: cancellationToken);
+
+        return absoluteUrl;
     }
 }

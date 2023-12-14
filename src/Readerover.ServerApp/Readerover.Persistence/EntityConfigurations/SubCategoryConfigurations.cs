@@ -11,10 +11,13 @@ public class SubCategoryConfigurations : IEntityTypeConfiguration<SubCategory>
     /// Category va Subcategory One-To-Many bog'lanadi
     /// </summary>
     /// <param name="builder"></param>
+    /// 
     public void Configure(EntityTypeBuilder<SubCategory> builder)
     {
         builder.HasOne(subCategory => subCategory.Category)
             .WithMany(category => category.SubCategories)
             .HasForeignKey(subCategory => subCategory.CategoryId);
+
+        builder.HasQueryFilter(subCategory => !subCategory.IsDeleted);
     }
 }
